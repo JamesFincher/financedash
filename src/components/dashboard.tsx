@@ -116,7 +116,7 @@ export function DashboardComponent() {
 
         while (isBefore(currentDate, monthEnd)) {
           const dueDateStr = currentDate.toISOString().split("T")[0];
-          const key = `${bill.id}-${dueDateStr}`;
+          const key = `${bill.id}-${dueDateStr}`; // Fixed template string
 
           // Check if bill generation is stopped from a certain date
           if (bill.deletedFromDate) {
