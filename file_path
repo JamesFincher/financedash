@@ -1,0 +1,58 @@
+const deleteBill = (id: string, deleteAll: boolean) => {
+  const billToDelete = originalBills.find((bill) => bill.id === id) || bills.find((bill) => bill.id === id && bill.originalId);
+
+  if (!billToDelete) return;
+
+  if (deleteAll) {
+    // Update the original bill's recurrence to 'none' instead of removing it
+    setOriginalBills((prevOriginalBills) =>
+      prevOriginalBills.map((bill) =>
+        bill.id === (billToDelete.originalId || billToDelete.id)
+          ? { ...bill, recurrence: "none" }
+          : bill
+      )
+    );
+
+    // Remove related entries from editedBills and deletedBills
+    setEditedBills((prevEditedBills) => {
+      const updated = { ...prevEditedBills };
+      Object.keys(updated).forEach((key) => {
+        if (key.startsWith(`${billToDelete.originalId || billToDelete.id}-${billToDelete.dueDate}`)) {
+          delete updated[key];
+        }
+      });
+      return updated;
+    });
+
+    setDeletedBills((prevDeletedBills) => {
+      const updated = { ...prevDeletedBills };
+      Object.keys(updated).forEach((key) => {
+        if (key.startsWith(`${billToDelete.originalId || billToDelete.id}-${billToDelete.dueDate}`)) {
+          delete updated[key];
+        }
+      });
+      return updated;
+    });
+
+    // Remove bill instances from the current month
+    setBills((prevBills) =>
+      prevBills.filter(
+        (bill) =>
+          bill.originalId !== (billToDelete.originalId || billToDelete.id) &&
+          bill.id !== billToDelete.id
+      )
+    );
+  } else {
+    // For deleting a single occurrence
+    const key = `${billToDelete.originalId || billToDelete.id}-${billToDelete.dueDate}`;
+    setDeletedBills((prev) => ({
+      ...prev,
+      [key]: true,
+    }));
+    setBills((prevBills) =>
+      prevBills.filter((bill) => bill.id !== id)
+    );
+  }
+  setBillToDelete(null);
+  setShowDeleteDialog(false);
+};
